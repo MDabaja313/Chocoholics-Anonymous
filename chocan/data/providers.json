@@ -1,0 +1,17 @@
+[
+  {
+    "provider_number": "200000001",
+    "name": "Dr. Nora Patel",
+    "status": "active"
+  },
+  {
+    "provider_number": "200000002",
+    "name": "Evergreen Wellness Clinic",
+    "status": "active"
+  },
+  {
+    "provider_number": "200000003",
+    "name": "Sunrise Counseling Center",
+    "status": "suspended"
+  }
+]
