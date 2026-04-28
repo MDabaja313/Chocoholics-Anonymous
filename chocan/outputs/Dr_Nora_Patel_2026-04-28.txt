@@ -1,0 +1,16 @@
+ChocAn Data Processing System
+Provider Report
+Date: 2026-04-28
+
+Provider Name: Dr. Nora Patel
+Provider Number: 200000001
+
+Services Provided:
+- Date of Service: 2026-04-28
+  Member: Alice Rivera (100000001)
+  Service: Chocolate Addiction Counseling (598470)
+  Fee: $125.00
+  Comments: test charge
+
+Total Consultations: 1
+Total Fees: $125.00

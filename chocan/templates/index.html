@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ChocAn Data Processing System</title>
+    <style>
+      :root {
+        --bg: #0b1220;
+        --panel: #121b2e;
+        --text: #eef2ff;
+        --muted: #b7c0d8;
+        --border: rgba(255, 255, 255, 0.12);
+        --accent: #7c3aed;
+        --good: #22c55e;
+        --bad: #ef4444;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", "Helvetica Neue";
+        background: radial-gradient(1000px 600px at 20% 0%, rgba(124, 58, 237, 0.25), transparent 60%),
+          radial-gradient(900px 600px at 80% 20%, rgba(34, 197, 94, 0.12), transparent 60%),
+          var(--bg);
+        color: var(--text);
+      }
+      .wrap { max-width: 1000px; margin: 28px auto; padding: 0 16px 40px; }
+      header { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+      h1 { font-size: 20px; margin: 0; letter-spacing: 0.2px; }
+      .hint { color: var(--muted); font-size: 13px; }
+      .tabs { margin-top: 16px; display: flex; gap: 8px; }
+      .tabbtn {
+        border: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.04);
+        color: var(--text);
+        padding: 10px 12px;
+        border-radius: 10px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 13px;
+      }
+      .tabbtn[aria-selected="true"] { background: rgba(124, 58, 237, 0.18); border-color: rgba(124, 58, 237, 0.5); }
+      .panel {
+        margin-top: 12px;
+        border: 1px solid var(--border);
+        background: rgba(18, 27, 46, 0.92);
+        border-radius: 14px;
+        padding: 16px;
+      }
+      .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+      @media (max-width: 850px) { .grid { grid-template-columns: 1fr; } }
+      .card {
+        border: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 12px;
+        padding: 14px;
+      }
+      .card h2 { margin: 0 0 10px; font-size: 14px; }
+      label { display: block; font-size: 12px; color: var(--muted); margin: 10px 0 6px; }
+      input, textarea {
+        width: 100%;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        background: rgba(0, 0, 0, 0.2);
+        color: var(--text);
+        padding: 10px 10px;
+        font-size: 13px;
+        outline: none;
+      }
+      textarea { min-height: 84px; resize: vertical; }
+      .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+      .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+      button.action {
+        border: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.06);
+        color: var(--text);
+        padding: 10px 12px;
+        border-radius: 10px;
+        cursor: pointer;
+        font-weight: 700;
+        font-size: 13px;
+      }
+      button.action.primary { background: rgba(124, 58, 237, 0.22); border-color: rgba(124, 58, 237, 0.55); }
+      button.action:disabled { opacity: 0.6; cursor: not-allowed; }
+      .out {
+        margin-top: 10px;
+        padding: 10px;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        background: rgba(0, 0, 0, 0.25);
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+        font-size: 12px;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+      }
+      .status.good { color: var(--good); }
+      .status.bad { color: var(--bad); }
+      table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+      th, td { text-align: left; border-bottom: 1px solid var(--border); padding: 8px 6px; font-size: 13px; }
+      th { color: var(--muted); font-weight: 700; font-size: 12px; }
+      .muted { color: var(--muted); }
+      .footer { margin-top: 14px; font-size: 12px; color: var(--muted); }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <h1>ChocAn Data Processing System</h1>
+        <div class="hint">Localhost demo • Flask + vanilla JS</div>
+      </header>
+
+      <div class="tabs" role="tablist" aria-label="Terminal tabs">
+        <button id="tabProvider" class="tabbtn" role="tab" aria-selected="true" aria-controls="providerPanel">Provider terminal</button>
+        <button id="tabManager" class="tabbtn" role="tab" aria-selected="false" aria-controls="managerPanel">Manager terminal</button>
+      </div>
+
+      <section id="providerPanel" class="panel" role="tabpanel" aria-labelledby="tabProvider">
+        <div class="grid">
+          <div class="card">
+            <h2>Validate member</h2>
+            <label>Member number</label>
+            <input id="vm_member" placeholder="e.g. 100000001" />
+            <div class="actions">
+              <button class="action primary" id="btnValidateMember">Validate member</button>
+            </div>
+            <div id="vm_out" class="out muted">Result will appear here.</div>
+          </div>
+
+          <div class="card">
+            <h2>Bill a service</h2>
+            <div class="row">
+              <div>
+                <label>Provider number</label>
+                <input id="bs_provider" placeholder="e.g. 200000001" />
+              </div>
+              <div>
+                <label>Member number</label>
+                <input id="bs_member" placeholder="e.g. 100000001" />
+              </div>
+            </div>
+            <div class="row">
+              <div>
+                <label>Service code</label>
+                <input id="bs_code" placeholder="e.g. 598470" />
+              </div>
+              <div>
+                <label>Date of service</label>
+                <input id="bs_date" placeholder="YYYY-MM-DD" />
+              </div>
+            </div>
+            <label>Comments (optional)</label>
+            <textarea id="bs_comments" placeholder="Optional notes..."></textarea>
+            <div class="actions">
+              <button class="action primary" id="btnBillService">Bill service</button>
+            </div>
+            <div id="bs_out" class="out muted">Result will appear here.</div>
+          </div>
+        </div>
+      </section>
+
+      <section id="managerPanel" class="panel" role="tabpanel" aria-labelledby="tabManager" hidden>
+        <div class="grid">
+          <div class="card">
+            <h2>Run weekly reports</h2>
+            <div class="actions">
+              <button class="action primary" id="btnRunReports">Run reports</button>
+            </div>
+            <div id="rr_out" class="out muted">Generated file paths will appear here.</div>
+            <div class="footer">Files are written to <span class="muted">`chocan/outputs/`</span>.</div>
+          </div>
+
+          <div class="card">
+            <h2>Provider directory</h2>
+            <div class="actions">
+              <button class="action" id="btnLoadDirectory">Load directory</button>
+            </div>
+            <div id="dir_out" class="out muted">Directory table will appear below.</div>
+            <div id="dir_table"></div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <script>
+      const $ = (id) => document.getElementById(id);
+
+      function setTab(which) {
+        const provider = which === "provider";
+        $("tabProvider").setAttribute("aria-selected", provider ? "true" : "false");
+        $("tabManager").setAttribute("aria-selected", provider ? "false" : "true");
+        $("providerPanel").hidden = !provider;
+        $("managerPanel").hidden = provider;
+      }
+
+      $("tabProvider").addEventListener("click", () => setTab("provider"));
+      $("tabManager").addEventListener("click", () => setTab("manager"));
+
+      function formatJson(obj) {
+        return JSON.stringify(obj, null, 2);
+      }
+
+      async function postJson(url, body) {
+        const res = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        const data = await res.json().catch(() => ({}));
+        return { ok: res.ok, status: res.status, data };
+      }
+
+      $("btnValidateMember").addEventListener("click", async () => {
+        const member_number = $("vm_member").value.trim();
+        $("vm_out").textContent = "Working...";
+        const { ok, data } = await postJson("/validate_member", { member_number });
+        $("vm_out").textContent = ok ? data.result : formatJson(data);
+        $("vm_out").className = "out " + (ok && data.result === "Validated" ? "status good" : (ok ? "status bad" : "status bad"));
+      });
+
+      $("btnBillService").addEventListener("click", async () => {
+        const payload = {
+          provider_number: $("bs_provider").value.trim(),
+          member_number: $("bs_member").value.trim(),
+          service_code: $("bs_code").value.trim(),
+          date_of_service: $("bs_date").value.trim(),
+          comments: $("bs_comments").value.trim(),
+        };
+        $("bs_out").textContent = "Working...";
+        const { ok, data } = await postJson("/bill_service", payload);
+        if (ok) {
+          $("bs_out").textContent = data.result + "\n\n" + formatJson(data.record);
+          $("bs_out").className = "out status good";
+        } else {
+          $("bs_out").textContent = formatJson(data);
+          $("bs_out").className = "out status bad";
+        }
+      });
+
+      $("btnLoadDirectory").addEventListener("click", async () => {
+        $("dir_out").textContent = "Loading...";
+        $("dir_table").innerHTML = "";
+        const res = await fetch("/provider_directory");
+        const data = await res.json();
+        const services = data.services || [];
+        $("dir_out").textContent = `Loaded ${services.length} services.`;
+
+        const table = document.createElement("table");
+        table.innerHTML = `
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Code</th>
+              <th>Fee</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        `;
+        const tbody = table.querySelector("tbody");
+        for (const s of services) {
+          const tr = document.createElement("tr");
+          const fee = typeof s.fee === "number" ? s.fee : Number(s.fee || 0);
+          tr.innerHTML = `
+            <td>${escapeHtml(String(s.name || ""))}</td>
+            <td>${escapeHtml(String(s.code || ""))}</td>
+            <td>$${fee.toFixed(2)}</td>
+          `;
+          tbody.appendChild(tr);
+        }
+        $("dir_table").appendChild(table);
+      });
+
+      $("btnRunReports").addEventListener("click", async () => {
+        $("rr_out").textContent = "Working...";
+        const { ok, data } = await postJson("/run_reports", {});
+        $("rr_out").textContent = ok ? formatJson(data.generated) : formatJson(data);
+        $("rr_out").className = "out " + (ok ? "status good" : "status bad");
+      });
+
+      function escapeHtml(s) {
+        return s
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
+      }
+
+      // Convenience: prefill today's date for billing
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, "0");
+      const dd = String(today.getDate()).padStart(2, "0");
+      $("bs_date").value = `${yyyy}-${mm}-${dd}`;
+    </script>
+  </body>
+</html>
