@@ -1,17 +1,32 @@
 [
   {
+    "number": "200000001",
     "provider_number": "200000001",
     "name": "Dr. Nora Patel",
+    "street_address": "400 Health Dr",
+    "city": "Detroit",
+    "state": "MI",
+    "zip_code": "48202",
     "status": "active"
   },
   {
+    "number": "200000002",
     "provider_number": "200000002",
     "name": "Evergreen Wellness Clinic",
+    "street_address": "250 Wellness Ave",
+    "city": "Dearborn",
+    "state": "MI",
+    "zip_code": "48124",
     "status": "active"
   },
   {
+    "number": "200000003",
     "provider_number": "200000003",
     "name": "Sunrise Counseling Center",
+    "street_address": "900 Sunrise Blvd",
+    "city": "Ann Arbor",
+    "state": "MI",
+    "zip_code": "48104",
     "status": "suspended"
   }
 ]

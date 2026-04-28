@@ -122,127 +122,251 @@ def create_app(*, data_dir: Path | None = None, outputs_dir: Path | None = None)
             json.dump(items, f, indent=2)
 
     # Operator CRUD (prototype; no auth)
+    
+    # Operator Management Helpers
+
+    TWO_LETTER_STATE_RE = re.compile(r"^[A-Za-z]{2}$")
+    FIVE_DIGIT_ZIP_RE = re.compile(r"^\d{5}$")
+
+    def _record_number(record, kind):
+        if kind == "member":
+            return str(record.get("number") or record.get("member_number") or "").strip()
+        return str(record.get("number") or record.get("provider_number") or "").strip()
+
+    def _validate_name_address_fields(payload, require_all=True):
+        name = str(payload.get("name", "")).strip()
+        street_address = str(payload.get("street_address", "")).strip()
+        city = str(payload.get("city", "")).strip()
+        state = str(payload.get("state", "")).strip().upper()
+        zip_code = str(payload.get("zip_code", "")).strip()
+
+        if require_all or name:
+            if not name or len(name) > 25:
+                return "Name must be 1-25 characters"
+
+        if require_all or street_address:
+            if not street_address or len(street_address) > 25:
+                return "Street address must be 1-25 characters"
+
+        if require_all or city:
+            if not city or len(city) > 14:
+                return "City must be 1-14 characters"
+
+        if require_all or state:
+            if not TWO_LETTER_STATE_RE.fullmatch(state):
+                return "State must be exactly 2 letters"
+
+        if require_all or zip_code:
+            if not FIVE_DIGIT_ZIP_RE.fullmatch(zip_code):
+                return "ZIP code must be exactly 5 digits"
+
+        return None
+
+    def _normalize_member(payload):
+        number = str(payload.get("number") or payload.get("member_number") or "").strip()
+        return {
+            "number": number,
+            "member_number": number,
+            "name": str(payload.get("name", "")).strip(),
+            "street_address": str(payload.get("street_address", "")).strip(),
+            "city": str(payload.get("city", "")).strip(),
+            "state": str(payload.get("state", "")).strip().upper(),
+            "zip_code": str(payload.get("zip_code", "")).strip(),
+            "status": str(payload.get("status", "active")).strip().lower(),
+        }
+
+    def _normalize_provider(payload):
+        number = str(payload.get("number") or payload.get("provider_number") or "").strip()
+        return {
+            "number": number,
+            "provider_number": number,
+            "name": str(payload.get("name", "")).strip(),
+            "street_address": str(payload.get("street_address", "")).strip(),
+            "city": str(payload.get("city", "")).strip(),
+            "state": str(payload.get("state", "")).strip().upper(),
+            "zip_code": str(payload.get("zip_code", "")).strip(),
+            "status": str(payload.get("status", "active")).strip().lower(),
+        }
+
+    def _apply_updates(record, payload, kind):
+        fields = ["name", "street_address", "city", "state", "zip_code"]
+
+        if kind == "member":
+            fields.append("status")
+
+        for field in fields:
+            if field in payload:
+                value = str(payload.get(field, "")).strip()
+
+                if field == "state":
+                    value = value.upper()
+
+                if field == "status":
+                    value = value.lower()
+
+                record[field] = value
+
+        return record
+
+    # Required Member Endpoints
+
+    @app.post("/add_member")
+    def add_member():
+        payload = request.get_json(silent=True) or {}
+        member = _normalize_member(payload)
+        number = member["number"]
+
+        if not NINE_DIGIT_RE.fullmatch(number):
+            return jsonify({"result": "Member number must be exactly 9 digits"}), 400
+
+        field_error = _validate_name_address_fields(payload, require_all=True)
+        if field_error:
+            return jsonify({"result": field_error}), 400
+
+        if member["status"] not in {"active", "suspended"}:
+            return jsonify({"result": "Status must be active or suspended"}), 400
+
+        path = data_dir / "members.json"
+        members = _read_json_list(path)
+
+        if any(_record_number(m, "member") == number for m in members):
+            return jsonify({"result": "Member already exists"}), 400
+
+        members.append(member)
+        _write_json_list(path, members)
+
+        return jsonify({"result": "Member added successfully", "member": member})
+
+    @app.post("/update_member")
+    def update_member():
+        payload = request.get_json(silent=True) or {}
+        number = str(payload.get("member_number") or payload.get("number") or "").strip()
+
+        if not NINE_DIGIT_RE.fullmatch(number):
+            return jsonify({"result": "Member number must be exactly 9 digits"}), 400
+
+        if "status" in payload:
+            status = str(payload.get("status", "")).strip().lower()
+            if status and status not in {"active", "suspended"}:
+                return jsonify({"result": "Status must be active or suspended"}), 400
+
+        field_error = _validate_name_address_fields(payload, require_all=False)
+        if field_error:
+            return jsonify({"result": field_error}), 400
+
+        path = data_dir / "members.json"
+        members = _read_json_list(path)
+
+        for member in members:
+            if _record_number(member, "member") == number:
+                _apply_updates(member, payload, "member")
+                member["number"] = number
+                member["member_number"] = number
+                _write_json_list(path, members)
+                return jsonify({"result": "Member updated successfully", "member": member})
+
+        return jsonify({"result": "Member not found"}), 404
+
+    @app.post("/delete_member")
+    def delete_member():
+        payload = request.get_json(silent=True) or {}
+        number = str(payload.get("member_number") or payload.get("number") or "").strip()
+
+        if not NINE_DIGIT_RE.fullmatch(number):
+            return jsonify({"result": "Member number must be exactly 9 digits"}), 400
+
+        path = data_dir / "members.json"
+        members = _read_json_list(path)
+        new_members = [m for m in members if _record_number(m, "member") != number]
+
+        if len(new_members) == len(members):
+            return jsonify({"result": "Member not found"}), 404
+
+        _write_json_list(path, new_members)
+
+        return jsonify({"result": "Member deleted successfully"})
+
+    # Required Provider Endpoints
+
+    @app.post("/add_provider")
+    def add_provider():
+        payload = request.get_json(silent=True) or {}
+        provider = _normalize_provider(payload)
+        number = provider["number"]
+
+        if not NINE_DIGIT_RE.fullmatch(number):
+            return jsonify({"result": "Provider number must be exactly 9 digits"}), 400
+
+        field_error = _validate_name_address_fields(payload, require_all=True)
+        if field_error:
+            return jsonify({"result": field_error}), 400
+
+        path = data_dir / "providers.json"
+        providers = _read_json_list(path)
+
+        if any(_record_number(p, "provider") == number for p in providers):
+            return jsonify({"result": "Provider already exists"}), 400
+
+        providers.append(provider)
+        _write_json_list(path, providers)
+
+        return jsonify({"result": "Provider added successfully", "provider": provider})
+
+    @app.post("/update_provider")
+    def update_provider():
+        payload = request.get_json(silent=True) or {}
+        number = str(payload.get("provider_number") or payload.get("number") or "").strip()
+
+        if not NINE_DIGIT_RE.fullmatch(number):
+            return jsonify({"result": "Provider number must be exactly 9 digits"}), 400
+
+        field_error = _validate_name_address_fields(payload, require_all=False)
+        if field_error:
+            return jsonify({"result": field_error}), 400
+
+        path = data_dir / "providers.json"
+        providers = _read_json_list(path)
+
+        for provider in providers:
+            if _record_number(provider, "provider") == number:
+                _apply_updates(provider, payload, "provider")
+                provider["number"] = number
+                provider["provider_number"] = number
+                _write_json_list(path, providers)
+                return jsonify({"result": "Provider updated successfully", "provider": provider})
+
+        return jsonify({"result": "Provider not found"}), 404
+
+    @app.post("/delete_provider")
+    def delete_provider():
+        payload = request.get_json(silent=True) or {}
+        number = str(payload.get("provider_number") or payload.get("number") or "").strip()
+
+        if not NINE_DIGIT_RE.fullmatch(number):
+            return jsonify({"result": "Provider number must be exactly 9 digits"}), 400
+
+        path = data_dir / "providers.json"
+        providers = _read_json_list(path)
+        new_providers = [p for p in providers if _record_number(p, "provider") != number]
+
+        if len(new_providers) == len(providers):
+            return jsonify({"result": "Provider not found"}), 404
+
+        _write_json_list(path, new_providers)
+
+        return jsonify({"result": "Provider deleted successfully"})
+
+    # =========================
+    # List Routes for Frontend Tables
+    # =========================
+
     @app.get("/operator/members")
     def operator_list_members():
         return jsonify({"members": _read_json_list(data_dir / "members.json")})
 
-    @app.post("/operator/members")
-    def operator_add_member():
-        payload = request.get_json(silent=True) or {}
-        member_number = str(payload.get("member_number", "")).strip()
-        name = str(payload.get("name", "")).strip()
-        status = str(payload.get("status", "active")).strip().lower()
-        if not NINE_DIGIT_RE.fullmatch(member_number) or not name:
-            return jsonify({"result": "Invalid input"}), 400
-        if status not in {"active", "suspended"}:
-            return jsonify({"result": "Invalid status"}), 400
-        path = data_dir / "members.json"
-        members = _read_json_list(path)
-        if any(str(m.get("member_number", "")).strip() == member_number for m in members):
-            return jsonify({"result": "Member already exists"}), 400
-        members.append({"member_number": member_number, "name": name, "status": status})
-        _write_json_list(path, members)
-        return jsonify({"result": "OK"})
-
-    @app.put("/operator/members/<member_number>")
-    def operator_update_member(member_number: str):
-        member_number = str(member_number).strip()
-        payload = request.get_json(silent=True) or {}
-        name = str(payload.get("name", "")).strip()
-        status = str(payload.get("status", "")).strip().lower()
-        if not NINE_DIGIT_RE.fullmatch(member_number):
-            return jsonify({"result": "Invalid number"}), 400
-        if status and status not in {"active", "suspended"}:
-            return jsonify({"result": "Invalid status"}), 400
-        path = data_dir / "members.json"
-        members = _read_json_list(path)
-        found = False
-        for m in members:
-            if str(m.get("member_number", "")).strip() == member_number:
-                if name:
-                    m["name"] = name
-                if status:
-                    m["status"] = status
-                found = True
-                break
-        if not found:
-            return jsonify({"result": "Not found"}), 404
-        _write_json_list(path, members)
-        return jsonify({"result": "OK"})
-
-    @app.delete("/operator/members/<member_number>")
-    def operator_delete_member(member_number: str):
-        member_number = str(member_number).strip()
-        if not NINE_DIGIT_RE.fullmatch(member_number):
-            return jsonify({"result": "Invalid number"}), 400
-        path = data_dir / "members.json"
-        members = _read_json_list(path)
-        new_members = [m for m in members if str(m.get("member_number", "")).strip() != member_number]
-        if len(new_members) == len(members):
-            return jsonify({"result": "Not found"}), 404
-        _write_json_list(path, new_members)
-        return jsonify({"result": "OK"})
-
     @app.get("/operator/providers")
     def operator_list_providers():
         return jsonify({"providers": _read_json_list(data_dir / "providers.json")})
-
-    @app.post("/operator/providers")
-    def operator_add_provider():
-        payload = request.get_json(silent=True) or {}
-        provider_number = str(payload.get("provider_number", "")).strip()
-        name = str(payload.get("name", "")).strip()
-        status = str(payload.get("status", "active")).strip().lower()
-        if not NINE_DIGIT_RE.fullmatch(provider_number) or not name:
-            return jsonify({"result": "Invalid input"}), 400
-        if status not in {"active", "suspended"}:
-            return jsonify({"result": "Invalid status"}), 400
-        path = data_dir / "providers.json"
-        providers = _read_json_list(path)
-        if any(str(p.get("provider_number", "")).strip() == provider_number for p in providers):
-            return jsonify({"result": "Provider already exists"}), 400
-        providers.append({"provider_number": provider_number, "name": name, "status": status})
-        _write_json_list(path, providers)
-        return jsonify({"result": "OK"})
-
-    @app.put("/operator/providers/<provider_number>")
-    def operator_update_provider(provider_number: str):
-        provider_number = str(provider_number).strip()
-        payload = request.get_json(silent=True) or {}
-        name = str(payload.get("name", "")).strip()
-        status = str(payload.get("status", "")).strip().lower()
-        if not NINE_DIGIT_RE.fullmatch(provider_number):
-            return jsonify({"result": "Invalid number"}), 400
-        if status and status not in {"active", "suspended"}:
-            return jsonify({"result": "Invalid status"}), 400
-        path = data_dir / "providers.json"
-        providers = _read_json_list(path)
-        found = False
-        for p in providers:
-            if str(p.get("provider_number", "")).strip() == provider_number:
-                if name:
-                    p["name"] = name
-                if status:
-                    p["status"] = status
-                found = True
-                break
-        if not found:
-            return jsonify({"result": "Not found"}), 404
-        _write_json_list(path, providers)
-        return jsonify({"result": "OK"})
-
-    @app.delete("/operator/providers/<provider_number>")
-    def operator_delete_provider(provider_number: str):
-        provider_number = str(provider_number).strip()
-        if not NINE_DIGIT_RE.fullmatch(provider_number):
-            return jsonify({"result": "Invalid number"}), 400
-        path = data_dir / "providers.json"
-        providers = _read_json_list(path)
-        new_providers = [p for p in providers if str(p.get("provider_number", "")).strip() != provider_number]
-        if len(new_providers) == len(providers):
-            return jsonify({"result": "Not found"}), 404
-        _write_json_list(path, new_providers)
-        return jsonify({"result": "OK"})
 
     return app
 
