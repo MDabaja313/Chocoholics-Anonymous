@@ -1,17 +1,32 @@
 [
   {
+    "number": "100000001",
     "member_number": "100000001",
     "name": "Alice Rivera",
-    "status": "active"
+    "status": "active",
+    "street_address": "123 Main St",
+    "city": "Portland",
+    "state": "OR",
+    "zip_code": "97201"
   },
   {
+    "number": "100000002",
     "member_number": "100000002",
     "name": "Brandon Lee",
-    "status": "suspended"
+    "status": "suspended",
+    "street_address": "456 Elm Ave",
+    "city": "Portland",
+    "state": "OR",
+    "zip_code": "97202"
   },
   {
+    "number": "100000003",
     "member_number": "100000003",
     "name": "Carmen Diaz",
-    "status": "active"
+    "status": "active",
+    "street_address": "789 Oak Blvd",
+    "city": "Portland",
+    "state": "OR",
+    "zip_code": "97203"
   }
 ]

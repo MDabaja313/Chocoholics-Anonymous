@@ -554,61 +554,106 @@
       }
 
       $("btnRefreshMembers").addEventListener("click", refreshMembers);
-      $("btnRefreshProviders").addEventListener("click", refreshProviders);
+$("btnRefreshProviders").addEventListener("click", refreshProviders);
 
-      $("btnAddMember").addEventListener("click", async () => {
-        hideAlert($("opMemberAlert"));
-        const body = { member_number: $("op_member_number").value.trim(), name: $("op_member_name").value.trim(), status: $("op_member_status").value };
-        const { ok, data } = await postJson("/operator/members", body);
-        if (!ok) return showAlert($("opMemberAlert"), "bad", data.result || "Failed");
-        showAlert($("opMemberAlert"), "good", "Member added.");
-        await refreshMembers();
-      });
-      $("btnUpdateMember").addEventListener("click", async () => {
-        hideAlert($("opMemberAlert"));
-        const n = $("op_member_number").value.trim();
-        const body = { name: $("op_member_name").value.trim(), status: $("op_member_status").value };
-        const { ok, data } = await postJson(`/operator/members/${encodeURIComponent(n)}`, body, "PUT");
-        if (!ok) return showAlert($("opMemberAlert"), "bad", data.result || "Failed");
-        showAlert($("opMemberAlert"), "good", "Member updated.");
-        await refreshMembers();
-      });
-      $("btnDeleteMember").addEventListener("click", async () => {
-        hideAlert($("opMemberAlert"));
-        const n = $("op_member_number").value.trim();
-        const res = await fetch(`/operator/members/${encodeURIComponent(n)}`, { method: "DELETE" });
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok) return showAlert($("opMemberAlert"), "bad", data.result || "Failed");
-        showAlert($("opMemberAlert"), "good", "Member deleted.");
-        await refreshMembers();
-      });
+$("btnAddMember").addEventListener("click", async () => {
+  hideAlert($("opMemberAlert"));
 
-      $("btnAddProvider").addEventListener("click", async () => {
-        hideAlert($("opProviderAlert"));
-        const body = { provider_number: $("op_provider_number").value.trim(), name: $("op_provider_name").value.trim(), status: $("op_provider_status").value };
-        const { ok, data } = await postJson("/operator/providers", body);
-        if (!ok) return showAlert($("opProviderAlert"), "bad", data.result || "Failed");
-        showAlert($("opProviderAlert"), "good", "Provider added.");
-        await refreshProviders();
-      });
-      $("btnUpdateProvider").addEventListener("click", async () => {
-        hideAlert($("opProviderAlert"));
-        const n = $("op_provider_number").value.trim();
-        const body = { name: $("op_provider_name").value.trim(), status: $("op_provider_status").value };
-        const { ok, data } = await postJson(`/operator/providers/${encodeURIComponent(n)}`, body, "PUT");
-        if (!ok) return showAlert($("opProviderAlert"), "bad", data.result || "Failed");
-        showAlert($("opProviderAlert"), "good", "Provider updated.");
-        await refreshProviders();
-      });
-      $("btnDeleteProvider").addEventListener("click", async () => {
-        hideAlert($("opProviderAlert"));
-        const n = $("op_provider_number").value.trim();
-        const res = await fetch(`/operator/providers/${encodeURIComponent(n)}`, { method: "DELETE" });
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok) return showAlert($("opProviderAlert"), "bad", data.result || "Failed");
-        showAlert($("opProviderAlert"), "good", "Provider deleted.");
-        await refreshProviders();
-      });
+  const body = {
+    number: $("op_member_number").value.trim(),
+    name: $("op_member_name").value.trim(),
+    street_address: "N/A",
+    city: "N/A",
+    state: "MI",
+    zip_code: "00000",
+    status: $("op_member_status").value
+  };
+
+  const { ok, data } = await postJson("/add_member", body);
+
+  if (!ok) return showAlert($("opMemberAlert"), "bad", data.result || "Failed");
+  showAlert($("opMemberAlert"), "good", data.result || "Member added.");
+  await refreshMembers();
+});
+
+$("btnUpdateMember").addEventListener("click", async () => {
+  hideAlert($("opMemberAlert"));
+
+  const body = {
+    member_number: $("op_member_number").value.trim(),
+    name: $("op_member_name").value.trim(),
+    status: $("op_member_status").value
+  };
+
+  const { ok, data } = await postJson("/update_member", body);
+
+  if (!ok) return showAlert($("opMemberAlert"), "bad", data.result || "Failed");
+  showAlert($("opMemberAlert"), "good", data.result || "Member updated.");
+  await refreshMembers();
+});
+
+$("btnDeleteMember").addEventListener("click", async () => {
+  hideAlert($("opMemberAlert"));
+
+  const body = {
+    member_number: $("op_member_number").value.trim()
+  };
+
+  const { ok, data } = await postJson("/delete_member", body);
+
+  if (!ok) return showAlert($("opMemberAlert"), "bad", data.result || "Failed");
+  showAlert($("opMemberAlert"), "good", data.result || "Member deleted.");
+  await refreshMembers();
+});
+
+$("btnAddProvider").addEventListener("click", async () => {
+  hideAlert($("opProviderAlert"));
+
+  const body = {
+    number: $("op_provider_number").value.trim(),
+    name: $("op_provider_name").value.trim(),
+    street_address: "N/A",
+    city: "N/A",
+    state: "MI",
+    zip_code: "00000",
+    status: $("op_provider_status").value
+  };
+
+  const { ok, data } = await postJson("/add_provider", body);
+
+  if (!ok) return showAlert($("opProviderAlert"), "bad", data.result || "Failed");
+  showAlert($("opProviderAlert"), "good", data.result || "Provider added.");
+  await refreshProviders();
+});
+
+$("btnUpdateProvider").addEventListener("click", async () => {
+  hideAlert($("opProviderAlert"));
+
+  const body = {
+    provider_number: $("op_provider_number").value.trim(),
+    name: $("op_provider_name").value.trim()
+  };
+
+  const { ok, data } = await postJson("/update_provider", body);
+
+  if (!ok) return showAlert($("opProviderAlert"), "bad", data.result || "Failed");
+  showAlert($("opProviderAlert"), "good", data.result || "Provider updated.");
+  await refreshProviders();
+});
+
+$("btnDeleteProvider").addEventListener("click", async () => {
+  hideAlert($("opProviderAlert"));
+
+  const body = {
+    provider_number: $("op_provider_number").value.trim()
+  };
+
+  const { ok, data } = await postJson("/delete_provider", body);
+
+  if (!ok) return showAlert($("opProviderAlert"), "bad", data.result || "Failed");
+  showAlert($("opProviderAlert"), "good", data.result || "Provider deleted.");
+  await refreshProviders();
+});
 
       const today = new Date();
       const yyyy = today.getFullYear();

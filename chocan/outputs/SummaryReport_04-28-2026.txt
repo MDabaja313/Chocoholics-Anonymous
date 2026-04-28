@@ -1,0 +1,10 @@
+ChocAn Data Processing System
+Manager Summary Report
+Date: 04-28-2026
+
+Provider Totals:
+- Dr. Nora Patel (200000001): 1 consultations, $125.00
+
+Total Providers: 1
+Total Consultations: 1
+Total Fees: $125.00
