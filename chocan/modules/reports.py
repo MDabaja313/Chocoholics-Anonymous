@@ -101,6 +101,8 @@ def generate_reports(*, data_dir: Path, outputs_dir: Path) -> Dict[str, List[str
                 fee = float(r.get("fee", 0) or 0)
                 provider_fee_total += fee
                 lines.append(f"- Date of Service: {r.get('date_of_service','')}")
+                # Standardize on professor-required field name.
+                lines.append(f"  Date and Time Data Were Received by Computer: {r.get('current_date_time','')}")
                 lines.append(f"  Member: {r.get('member_name','')} ({r.get('member_number','')})")
                 lines.append(f"  Service: {r.get('service_name','')} ({r.get('service_code','')})")
                 lines.append(f"  Fee: {_money(fee)}")

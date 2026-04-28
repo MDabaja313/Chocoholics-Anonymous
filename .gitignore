@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+*.pyo
+
+.venv/
+backend/.venv/
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+backend/chocan.sqlite3
+generated_reports/*.txt
+chocan/outputs/*.txt
+
+.pytest_cache/
+.dist/
