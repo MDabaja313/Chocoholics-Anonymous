@@ -1,0 +1,27 @@
+[
+  {
+    "code": "598470",
+    "name": "Chocolate Addiction Counseling",
+    "fee": 125.0
+  },
+  {
+    "code": "883948",
+    "name": "Cocoa Mindfulness Session",
+    "fee": 85.0
+  },
+  {
+    "code": "112233",
+    "name": "Dietary Planning (No Cocoa)",
+    "fee": 60.0
+  },
+  {
+    "code": "445566",
+    "name": "Group Support Meeting",
+    "fee": 40.0
+  },
+  {
+    "code": "778899",
+    "name": "Relapse Prevention Workshop",
+    "fee": 95.0
+  }
+]

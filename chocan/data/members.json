@@ -1,0 +1,17 @@
+[
+  {
+    "member_number": "100000001",
+    "name": "Alice Rivera",
+    "status": "active"
+  },
+  {
+    "member_number": "100000002",
+    "name": "Brandon Lee",
+    "status": "suspended"
+  },
+  {
+    "member_number": "100000003",
+    "name": "Carmen Diaz",
+    "status": "active"
+  }
+]
