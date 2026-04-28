@@ -6,6 +6,628 @@
     <title>ChocAn Data Processing System</title>
     <style>
       :root {
+        --bg: #ffffff;
+        --text: #0f172a;
+        --muted: #475569;
+        --border: #e2e8f0;
+        --accent: #2563eb;
+        --accent-ink: #ffffff;
+        --accent-soft: #eff6ff;
+        --good-bg: #ecfdf5;
+        --good-ink: #065f46;
+        --bad-bg: #fef2f2;
+        --bad-ink: #991b1b;
+        --shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", "Helvetica Neue";
+        background: #f8fafc;
+        color: var(--text);
+      }
+      .container { max-width: 1100px; margin: 0 auto; padding: 24px 16px 48px; }
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 12px 14px;
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        box-shadow: var(--shadow);
+      }
+      .brand { display: flex; flex-direction: column; gap: 2px; }
+      .brand h1 { font-size: 16px; margin: 0; }
+      .brand .sub { font-size: 12px; color: var(--muted); }
+      .right { display: flex; align-items: center; gap: 10px; }
+      .pill {
+        font-size: 12px;
+        padding: 6px 10px;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        background: #fff;
+        color: var(--muted);
+      }
+      .btn {
+        border: 1px solid var(--border);
+        background: #fff;
+        color: var(--text);
+        padding: 10px 12px;
+        border-radius: 12px;
+        cursor: pointer;
+        font-weight: 700;
+        font-size: 13px;
+      }
+      .btn.primary { background: var(--accent); color: var(--accent-ink); border-color: rgba(37,99,235,.6); }
+      .btn.soft { background: var(--accent-soft); border-color: rgba(37,99,235,.25); color: #1d4ed8; }
+      .btn.danger { border-color: rgba(153,27,27,.35); color: #991b1b; }
+      .btn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+      .card {
+        margin-top: 16px;
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 16px;
+        box-shadow: var(--shadow);
+      }
+      .card h2 { font-size: 14px; margin: 0 0 8px; }
+      .help { margin: 0 0 10px; color: var(--muted); font-size: 13px; line-height: 1.35; }
+      .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+      @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+      .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+      @media (max-width: 600px) { .row { grid-template-columns: 1fr; } }
+      label { display: block; font-size: 12px; color: var(--muted); margin: 10px 0 6px; }
+      input, select, textarea {
+        width: 100%;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        background: #fff;
+        color: var(--text);
+        padding: 10px 10px;
+        font-size: 14px;
+        outline: none;
+      }
+      textarea { min-height: 80px; resize: vertical; }
+      .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+      .alert {
+        margin-top: 12px;
+        padding: 10px 12px;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        font-size: 13px;
+      }
+      .alert.good { background: var(--good-bg); color: var(--good-ink); border-color: rgba(6,95,70,.25); }
+      .alert.bad { background: var(--bad-bg); color: var(--bad-ink); border-color: rgba(153,27,27,.25); }
+      .alert.neutral { background: #f1f5f9; color: #334155; border-color: #e2e8f0; }
+      .divider { height: 1px; background: var(--border); margin: 14px 0; }
+      .steps { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+      .step {
+        font-size: 12px;
+        padding: 6px 10px;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        background: #fff;
+        color: var(--muted);
+      }
+      .step.active { border-color: rgba(37,99,235,.4); background: var(--accent-soft); color: #1d4ed8; }
+      table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+      th, td { text-align: left; border-bottom: 1px solid var(--border); padding: 10px 8px; font-size: 13px; }
+      th { color: var(--muted); font-weight: 800; font-size: 12px; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; }
+      .small { font-size: 12px; color: var(--muted); }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="topbar">
+        <div class="brand">
+          <h1>ChocAn Data Processing System</h1>
+          <div class="sub">Chocoholics Anonymous — Health Care Management</div>
+        </div>
+        <div class="right">
+          <div id="sessionPill" class="pill" hidden></div>
+          <button id="btnLogout" class="btn danger" hidden>Logout</button>
+        </div>
+      </div>
+
+      <section id="viewLanding" class="card">
+        <h2 style="text-align:center;margin-top:4px;">Welcome</h2>
+        <p class="help" style="text-align:center;">
+          Select a role to begin. Provider Terminal requires a provider number for this prototype.
+        </p>
+        <div class="actions" style="justify-content:center;">
+          <button id="btnGoProvider" class="btn primary">Provider Terminal</button>
+          <button id="btnGoManager" class="btn soft">Manager Terminal</button>
+          <button id="btnGoOperator" class="btn soft">Operator Console</button>
+        </div>
+
+        <div id="providerLogin" class="card" style="max-width:520px;margin:16px auto 0;" hidden>
+          <h2>Provider login</h2>
+          <p class="help">Enter your provider number (9 digits). We’ll validate it before allowing access.</p>
+          <label>Provider number</label>
+          <input id="login_provider_number" placeholder="9-digit number (e.g. 200000001)" inputmode="numeric" />
+          <div class="actions">
+            <button id="btnProviderLogin" class="btn primary">Login</button>
+            <button id="btnProviderCancel" class="btn">Cancel</button>
+          </div>
+          <div id="loginAlert" class="alert neutral" hidden></div>
+        </div>
+      </section>
+
+      <section id="viewProvider" class="card" hidden>
+        <h2>Provider Terminal</h2>
+        <p class="help">Logged in as: <span id="providerName" class="mono"></span></p>
+
+        <div class="grid">
+          <div class="card">
+            <h2>Step 1: Validate Member</h2>
+            <p class="help">Enter a 9-digit member number to confirm eligibility.</p>
+            <label>Member number</label>
+            <input id="p_member_number" placeholder="9-digit number (e.g. 100000001)" inputmode="numeric" />
+            <div class="actions">
+              <button id="btnProviderValidateMember" class="btn primary">Validate member</button>
+            </div>
+            <div id="p_member_alert" class="alert neutral" hidden></div>
+          </div>
+
+          <div class="card">
+            <h2>Step 2–3: Bill a Service</h2>
+            <p class="help">Enter service details, verify the code, then confirm to bill.</p>
+            <div class="steps">
+              <span id="step1" class="step active">Step 1: Validate Member</span>
+              <span id="step2" class="step">Step 2: Enter Service Details</span>
+              <span id="step3" class="step">Step 3: Verify & Confirm</span>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="row">
+              <div>
+                <label>Member number</label>
+                <input id="b_member_number" placeholder="9-digit number" inputmode="numeric" />
+              </div>
+              <div>
+                <label>Date of service</label>
+                <input id="b_date" placeholder="MM-DD-YYYY" />
+              </div>
+            </div>
+            <div class="row">
+              <div>
+                <label>Service code</label>
+                <input id="b_service_code" placeholder="6-digit code (e.g. 598470)" inputmode="numeric" />
+              </div>
+              <div>
+                <label>Comments (optional, max 100)</label>
+                <input id="b_comments" placeholder="Optional notes (0–100 chars)" maxlength="100" />
+              </div>
+            </div>
+
+            <div class="actions">
+              <button id="btnVerifyCode" class="btn">Verify Code</button>
+              <button id="btnConfirmBill" class="btn primary" disabled>Confirm & Bill</button>
+            </div>
+
+            <div id="verifyAlert" class="alert neutral" hidden></div>
+            <div id="billAlert" class="alert neutral" hidden></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Provider Directory</h2>
+          <p class="help">Request the provider directory (services sorted alphabetically).</p>
+          <div class="actions">
+            <button id="btnProviderDirectory" class="btn soft">Request Provider Directory</button>
+          </div>
+          <div id="providerDirAlert" class="alert neutral" hidden></div>
+          <div id="providerDirTable"></div>
+        </div>
+      </section>
+
+      <section id="viewManager" class="card" hidden>
+        <h2>Manager Terminal</h2>
+        <p class="help">Run reports and review generated output files.</p>
+
+        <div class="grid">
+          <div class="card">
+            <h2>Reports</h2>
+            <p class="help">Generate member/provider reports, a summary report, and an EFT file.</p>
+            <div class="actions">
+              <button id="btnRunReports" class="btn primary">Run Reports</button>
+              <button id="btnRefreshOutputs" class="btn">Refresh output list</button>
+            </div>
+            <div id="mgrReportsAlert" class="alert neutral" hidden></div>
+            <div id="outputsList" class="small"></div>
+          </div>
+
+          <div class="card">
+            <h2>Provider Directory</h2>
+            <p class="help">View the provider directory (services sorted alphabetically).</p>
+            <div class="actions">
+              <button id="btnManagerDirectory" class="btn soft">Request Provider Directory</button>
+            </div>
+            <div id="managerDirAlert" class="alert neutral" hidden></div>
+            <div id="managerDirTable"></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="viewOperator" class="card" hidden>
+        <h2>Operator Console</h2>
+        <p class="help">Prototype CRUD for members and providers (no billing/reports here).</p>
+
+        <div class="grid">
+          <div class="card">
+            <h2>Member Management</h2>
+            <p class="help">Add / update / delete members.</p>
+            <div class="row">
+              <div>
+                <label>Member number</label>
+                <input id="op_member_number" placeholder="9-digit number" inputmode="numeric" />
+              </div>
+              <div>
+                <label>Status</label>
+                <select id="op_member_status">
+                  <option value="active">active</option>
+                  <option value="suspended">suspended</option>
+                </select>
+              </div>
+            </div>
+            <label>Name</label>
+            <input id="op_member_name" placeholder="Full name" />
+            <div class="actions">
+              <button id="btnAddMember" class="btn primary">Add</button>
+              <button id="btnUpdateMember" class="btn">Update</button>
+              <button id="btnDeleteMember" class="btn danger">Delete</button>
+              <button id="btnRefreshMembers" class="btn soft">Refresh list</button>
+            </div>
+            <div id="opMemberAlert" class="alert neutral" hidden></div>
+            <div id="membersTable"></div>
+          </div>
+
+          <div class="card">
+            <h2>Provider Management</h2>
+            <p class="help">Add / update / delete providers.</p>
+            <div class="row">
+              <div>
+                <label>Provider number</label>
+                <input id="op_provider_number" placeholder="9-digit number" inputmode="numeric" />
+              </div>
+              <div>
+                <label>Status</label>
+                <select id="op_provider_status">
+                  <option value="active">active</option>
+                  <option value="suspended">suspended</option>
+                </select>
+              </div>
+            </div>
+            <label>Name</label>
+            <input id="op_provider_name" placeholder="Provider name" />
+            <div class="actions">
+              <button id="btnAddProvider" class="btn primary">Add</button>
+              <button id="btnUpdateProvider" class="btn">Update</button>
+              <button id="btnDeleteProvider" class="btn danger">Delete</button>
+              <button id="btnRefreshProviders" class="btn soft">Refresh list</button>
+            </div>
+            <div id="opProviderAlert" class="alert neutral" hidden></div>
+            <div id="providersTable"></div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <script>
+      const $ = (id) => document.getElementById(id);
+
+      const state = {
+        role: "landing",
+        provider: null,
+        verifiedService: null,
+      };
+
+      function escapeHtml(s) {
+        return String(s ?? "")
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
+      }
+
+      function showAlert(el, type, message) {
+        el.hidden = false;
+        el.className = `alert ${type}`;
+        el.textContent = message;
+      }
+
+      function hideAlert(el) {
+        el.hidden = true;
+        el.textContent = "";
+        el.className = "alert neutral";
+      }
+
+      async function postJson(url, body, method = "POST") {
+        const res = await fetch(url, {
+          method,
+          headers: { "Content-Type": "application/json" },
+          body: body == null ? null : JSON.stringify(body),
+        });
+        const data = await res.json().catch(() => ({}));
+        return { ok: res.ok, status: res.status, data };
+      }
+
+      function setRole(role) {
+        state.role = role;
+        $("viewLanding").hidden = role !== "landing";
+        $("viewProvider").hidden = role !== "provider";
+        $("viewManager").hidden = role !== "manager";
+        $("viewOperator").hidden = role !== "operator";
+
+        const hasSession = role !== "landing";
+        $("btnLogout").hidden = !hasSession;
+        $("sessionPill").hidden = !hasSession;
+
+        if (!hasSession) {
+          $("sessionPill").textContent = "";
+          state.provider = null;
+          state.verifiedService = null;
+          $("providerLogin").hidden = true;
+          hideAlert($("loginAlert"));
+        }
+
+        if (role === "provider" && state.provider) {
+          $("sessionPill").textContent = `Provider: ${state.provider.number}`;
+          $("providerName").textContent = state.provider.name || "(unknown)";
+        }
+        if (role === "manager") $("sessionPill").textContent = "Role: Manager";
+        if (role === "operator") $("sessionPill").textContent = "Role: Operator";
+      }
+
+      $("btnLogout").addEventListener("click", () => setRole("landing"));
+
+      $("btnGoProvider").addEventListener("click", () => {
+        $("providerLogin").hidden = false;
+        hideAlert($("loginAlert"));
+        $("login_provider_number").focus();
+      });
+      $("btnGoManager").addEventListener("click", () => setRole("manager"));
+      $("btnGoOperator").addEventListener("click", () => setRole("operator"));
+      $("btnProviderCancel").addEventListener("click", () => {
+        $("providerLogin").hidden = true;
+        hideAlert($("loginAlert"));
+      });
+
+      $("btnProviderLogin").addEventListener("click", async () => {
+        const provider_number = $("login_provider_number").value.trim();
+        showAlert($("loginAlert"), "neutral", "Validating provider number...");
+        const { ok, data } = await postJson("/validate_provider", { provider_number });
+        if (!ok) return showAlert($("loginAlert"), "bad", data.result || "Login failed");
+        if (data.result !== "Validated") return showAlert($("loginAlert"), "bad", data.result);
+        state.provider = { number: provider_number, name: data.provider_name || "" };
+        setRole("provider");
+        $("providerLogin").hidden = true;
+      });
+
+      function setBillingStep(active) {
+        $("step1").classList.toggle("active", active === 1);
+        $("step2").classList.toggle("active", active === 2);
+        $("step3").classList.toggle("active", active === 3);
+      }
+
+      $("btnProviderValidateMember").addEventListener("click", async () => {
+        const member_number = $("p_member_number").value.trim();
+        hideAlert($("p_member_alert"));
+        showAlert($("p_member_alert"), "neutral", "Validating member number...");
+        const { ok, data } = await postJson("/validate_member", { member_number });
+        if (!ok) {
+          setBillingStep(1);
+          return showAlert($("p_member_alert"), "bad", data.result || "Validation failed");
+        }
+        if (data.result === "Validated") {
+          showAlert($("p_member_alert"), "good", "Validated");
+          $("b_member_number").value = member_number;
+          setBillingStep(2);
+        } else {
+          setBillingStep(1);
+          showAlert($("p_member_alert"), "bad", data.result);
+        }
+      });
+
+      async function verifyCode() {
+        state.verifiedService = null;
+        $("btnConfirmBill").disabled = true;
+        hideAlert($("verifyAlert"));
+
+        const code = $("b_service_code").value.trim();
+        if (!code) return showAlert($("verifyAlert"), "bad", "Enter a service code first.");
+
+        showAlert($("verifyAlert"), "neutral", "Verifying code...");
+        const res = await fetch(`/verify_service_code?service_code=${encodeURIComponent(code)}`);
+        const data = await res.json().catch(() => ({}));
+        if (!data.found) {
+          setBillingStep(2);
+          return showAlert($("verifyAlert"), "bad", "Service code not found.");
+        }
+        state.verifiedService = { code, name: data.service_name, fee: data.fee };
+        showAlert($("verifyAlert"), "good", `Verified: ${data.service_name} — $${Number(data.fee || 0).toFixed(2)}`);
+        $("btnConfirmBill").disabled = false;
+        setBillingStep(3);
+      }
+
+      $("btnVerifyCode").addEventListener("click", verifyCode);
+
+      $("btnConfirmBill").addEventListener("click", async () => {
+        hideAlert($("billAlert"));
+        if (!state.provider) return showAlert($("billAlert"), "bad", "Not logged in.");
+        if (!state.verifiedService) return showAlert($("billAlert"), "bad", "Verify a service code first.");
+
+        const payload = {
+          provider_number: state.provider.number,
+          member_number: $("b_member_number").value.trim(),
+          date_of_service: $("b_date").value.trim(),
+          service_code: state.verifiedService.code,
+          comments: $("b_comments").value.trim(),
+        };
+        showAlert($("billAlert"), "neutral", "Submitting billing record...");
+        const { ok, data } = await postJson("/bill_service", payload);
+        if (!ok) return showAlert($("billAlert"), "bad", data.result || "Billing failed");
+        showAlert($("billAlert"), "good", `Service recorded. Fee: $${Number(data.record?.fee || 0).toFixed(2)}`);
+        state.verifiedService = null;
+        $("btnConfirmBill").disabled = true;
+        setBillingStep(2);
+      });
+
+      async function loadDirectory(intoTableEl, alertEl) {
+        hideAlert(alertEl);
+        showAlert(alertEl, "neutral", "Loading directory...");
+        const res = await fetch("/provider_directory");
+        const data = await res.json().catch(() => ({}));
+        const services = data.services || [];
+        showAlert(alertEl, "good", `Loaded ${services.length} services.`);
+
+        const table = document.createElement("table");
+        table.innerHTML = "<thead><tr><th>Name</th><th>Code</th><th>Fee</th></tr></thead><tbody></tbody>";
+        const tbody = table.querySelector("tbody");
+        for (const s of services) {
+          const tr = document.createElement("tr");
+          const fee = typeof s.fee === "number" ? s.fee : Number(s.fee || 0);
+          tr.innerHTML = `<td>${escapeHtml(s.name)}</td><td class="mono">${escapeHtml(s.code)}</td><td>$${fee.toFixed(2)}</td>`;
+          tbody.appendChild(tr);
+        }
+        intoTableEl.innerHTML = "";
+        intoTableEl.appendChild(table);
+      }
+
+      $("btnProviderDirectory").addEventListener("click", () => loadDirectory($("providerDirTable"), $("providerDirAlert")));
+      $("btnManagerDirectory").addEventListener("click", () => loadDirectory($("managerDirTable"), $("managerDirAlert")));
+
+      async function refreshOutputs() {
+        const res = await fetch("/outputs_list");
+        const data = await res.json().catch(() => ({}));
+        const files = data.files || [];
+        $("outputsList").innerHTML =
+          files.length === 0
+            ? "<div class='small'>No output files yet.</div>"
+            : `<ul class="small">${files.map((f) => `<li class="mono">${escapeHtml(f)}</li>`).join("")}</ul>`;
+      }
+
+      $("btnRunReports").addEventListener("click", async () => {
+        hideAlert($("mgrReportsAlert"));
+        showAlert($("mgrReportsAlert"), "neutral", "Generating reports...");
+        const { ok, data } = await postJson("/run_reports", {});
+        if (!ok) return showAlert($("mgrReportsAlert"), "bad", data.result || "Failed to run reports");
+        showAlert($("mgrReportsAlert"), "good", "Reports generated.");
+        await refreshOutputs();
+      });
+
+      $("btnRefreshOutputs").addEventListener("click", refreshOutputs);
+
+      function renderPeopleTable(items, kind) {
+        const key = kind === "member" ? "member_number" : "provider_number";
+        const table = document.createElement("table");
+        table.innerHTML =
+          `<thead><tr><th>${kind === "member" ? "Member #" : "Provider #"}</th><th>Name</th><th>Status</th></tr></thead>` +
+          "<tbody></tbody>";
+        const tbody = table.querySelector("tbody");
+        for (const it of items) {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `<td class="mono">${escapeHtml(it[key] || "")}</td><td>${escapeHtml(it.name || "")}</td><td>${escapeHtml(it.status || "")}</td>`;
+          tbody.appendChild(tr);
+        }
+        return table;
+      }
+
+      async function refreshMembers() {
+        const res = await fetch("/operator/members");
+        const data = await res.json().catch(() => ({}));
+        $("membersTable").innerHTML = "";
+        $("membersTable").appendChild(renderPeopleTable(data.members || [], "member"));
+      }
+
+      async function refreshProviders() {
+        const res = await fetch("/operator/providers");
+        const data = await res.json().catch(() => ({}));
+        $("providersTable").innerHTML = "";
+        $("providersTable").appendChild(renderPeopleTable(data.providers || [], "provider"));
+      }
+
+      $("btnRefreshMembers").addEventListener("click", refreshMembers);
+      $("btnRefreshProviders").addEventListener("click", refreshProviders);
+
+      $("btnAddMember").addEventListener("click", async () => {
+        hideAlert($("opMemberAlert"));
+        const body = { member_number: $("op_member_number").value.trim(), name: $("op_member_name").value.trim(), status: $("op_member_status").value };
+        const { ok, data } = await postJson("/operator/members", body);
+        if (!ok) return showAlert($("opMemberAlert"), "bad", data.result || "Failed");
+        showAlert($("opMemberAlert"), "good", "Member added.");
+        await refreshMembers();
+      });
+      $("btnUpdateMember").addEventListener("click", async () => {
+        hideAlert($("opMemberAlert"));
+        const n = $("op_member_number").value.trim();
+        const body = { name: $("op_member_name").value.trim(), status: $("op_member_status").value };
+        const { ok, data } = await postJson(`/operator/members/${encodeURIComponent(n)}`, body, "PUT");
+        if (!ok) return showAlert($("opMemberAlert"), "bad", data.result || "Failed");
+        showAlert($("opMemberAlert"), "good", "Member updated.");
+        await refreshMembers();
+      });
+      $("btnDeleteMember").addEventListener("click", async () => {
+        hideAlert($("opMemberAlert"));
+        const n = $("op_member_number").value.trim();
+        const res = await fetch(`/operator/members/${encodeURIComponent(n)}`, { method: "DELETE" });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) return showAlert($("opMemberAlert"), "bad", data.result || "Failed");
+        showAlert($("opMemberAlert"), "good", "Member deleted.");
+        await refreshMembers();
+      });
+
+      $("btnAddProvider").addEventListener("click", async () => {
+        hideAlert($("opProviderAlert"));
+        const body = { provider_number: $("op_provider_number").value.trim(), name: $("op_provider_name").value.trim(), status: $("op_provider_status").value };
+        const { ok, data } = await postJson("/operator/providers", body);
+        if (!ok) return showAlert($("opProviderAlert"), "bad", data.result || "Failed");
+        showAlert($("opProviderAlert"), "good", "Provider added.");
+        await refreshProviders();
+      });
+      $("btnUpdateProvider").addEventListener("click", async () => {
+        hideAlert($("opProviderAlert"));
+        const n = $("op_provider_number").value.trim();
+        const body = { name: $("op_provider_name").value.trim(), status: $("op_provider_status").value };
+        const { ok, data } = await postJson(`/operator/providers/${encodeURIComponent(n)}`, body, "PUT");
+        if (!ok) return showAlert($("opProviderAlert"), "bad", data.result || "Failed");
+        showAlert($("opProviderAlert"), "good", "Provider updated.");
+        await refreshProviders();
+      });
+      $("btnDeleteProvider").addEventListener("click", async () => {
+        hideAlert($("opProviderAlert"));
+        const n = $("op_provider_number").value.trim();
+        const res = await fetch(`/operator/providers/${encodeURIComponent(n)}`, { method: "DELETE" });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) return showAlert($("opProviderAlert"), "bad", data.result || "Failed");
+        showAlert($("opProviderAlert"), "good", "Provider deleted.");
+        await refreshProviders();
+      });
+
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, "0");
+      const dd = String(today.getDate()).padStart(2, "0");
+      $("b_date").value = `${mm}-${dd}-${yyyy}`;
+
+      setRole("landing");
+    </script>
+  </body>
+</html>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ChocAn Data Processing System</title>
+    <style>
+      :root {
         --bg: #0b1220;
         --panel: #121b2e;
         --text: #eef2ff;
