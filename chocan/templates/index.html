@@ -145,13 +145,15 @@
               </div>
               <div>
                 <label>Date of service</label>
-                <input id="bs_date" placeholder="YYYY-MM-DD" />
+                <input id="bs_date" placeholder="MM-DD-YYYY" />
               </div>
             </div>
+            <div id="bs_service_lookup" class="out muted" style="margin-top: 10px;">Enter a service code to verify.</div>
             <label>Comments (optional)</label>
             <textarea id="bs_comments" placeholder="Optional notes..."></textarea>
             <div class="actions">
-              <button class="action primary" id="btnBillService">Bill service</button>
+              <button class="action" id="btnVerifyService">Verify code</button>
+              <button class="action primary" id="btnConfirmBill" disabled>Confirm</button>
             </div>
             <div id="bs_out" class="out muted">Result will appear here.</div>
           </div>
@@ -218,10 +220,48 @@
       });
 
       $("btnBillService").addEventListener("click", async () => {
+      let verifiedService = null; // { service_code, service_name, fee }
+
+      async function verifyServiceCode() {
+        const code = $("bs_code").value.trim();
+        verifiedService = null;
+        $("btnConfirmBill").disabled = true;
+
+        if (!code) {
+          $("bs_service_lookup").textContent = "Enter a service code to verify.";
+          $("bs_service_lookup").className = "out muted";
+          return;
+        }
+
+        $("bs_service_lookup").textContent = "Verifying...";
+        $("bs_service_lookup").className = "out muted";
+        const res = await fetch(`/verify_service_code?service_code=${encodeURIComponent(code)}`);
+        const data = await res.json().catch(() => ({}));
+
+        if (data.found) {
+          verifiedService = { service_code: code, service_name: data.service_name, fee: data.fee };
+          $("bs_service_lookup").textContent = `Found: ${data.service_name} ($${Number(data.fee || 0).toFixed(2)})`;
+          $("bs_service_lookup").className = "out status good";
+          $("btnConfirmBill").disabled = false;
+        } else {
+          $("bs_service_lookup").textContent = "Service code not found.";
+          $("bs_service_lookup").className = "out status bad";
+        }
+      }
+
+      $("btnVerifyService").addEventListener("click", verifyServiceCode);
+      $("bs_code").addEventListener("blur", verifyServiceCode);
+
+      $("btnConfirmBill").addEventListener("click", async () => {
+        if (!verifiedService) {
+          $("bs_out").textContent = "Verify a valid service code first.";
+          $("bs_out").className = "out status bad";
+          return;
+        }
         const payload = {
           provider_number: $("bs_provider").value.trim(),
           member_number: $("bs_member").value.trim(),
-          service_code: $("bs_code").value.trim(),
+          service_code: verifiedService.service_code,
           date_of_service: $("bs_date").value.trim(),
           comments: $("bs_comments").value.trim(),
         };
@@ -290,7 +330,7 @@
       const yyyy = today.getFullYear();
       const mm = String(today.getMonth() + 1).padStart(2, "0");
       const dd = String(today.getDate()).padStart(2, "0");
-      $("bs_date").value = `${yyyy}-${mm}-${dd}`;
+      $("bs_date").value = `${mm}-${dd}-${yyyy}`;
     </script>
   </body>
 </html>

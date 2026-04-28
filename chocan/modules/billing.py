@@ -47,7 +47,7 @@ def bill_service(
         return False, "Invalid number", None
 
     record: Dict[str, Any] = {
-        "timestamp": datetime.now().isoformat(timespec="seconds"),
+        "current_date_time": datetime.now().strftime("%m-%d-%Y %H:%M:%S"),
         "provider_number": provider_number,
         "provider_name": str(provider.get("name", "")).strip(),
         "member_number": member_number,
@@ -56,7 +56,7 @@ def bill_service(
         "service_name": str(service.get("name", "")).strip(),
         "fee": float(service.get("fee", 0) or 0),
         "date_of_service": str(date_of_service).strip(),
-        "comments": (comments or "").strip(),
+        "comments": (comments or "").strip()[:100],
     }
 
     log_path = data_dir / "services_log.json"
