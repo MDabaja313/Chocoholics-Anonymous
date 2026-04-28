@@ -2,16 +2,28 @@
   {
     "provider_number": "200000001",
     "name": "Dr. Nora Patel",
-    "status": "active"
+    "status": "active",
+    "street_address": "101 Pine St",
+    "city": "Portland",
+    "state": "OR",
+    "zip_code": "97204"
   },
   {
     "provider_number": "200000002",
     "name": "Evergreen Wellness Clinic",
-    "status": "active"
+    "status": "active",
+    "street_address": "202 Cedar Ave",
+    "city": "Portland",
+    "state": "OR",
+    "zip_code": "97205"
   },
   {
     "provider_number": "200000003",
     "name": "Sunrise Counseling Center",
-    "status": "suspended"
+    "status": "suspended",
+    "street_address": "303 Birch Rd",
+    "city": "Portland",
+    "state": "OR",
+    "zip_code": "97206"
   }
 ]

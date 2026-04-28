@@ -1,13 +1,15 @@
 ChocAn Data Processing System
 Member Report
-Date: 2026-04-28
+Date: 04-28-2026
 
 Member Name: Alice Rivera
 Member Number: 100000001
+Street Address: 123 Main St
+City: Portland
+State: OR
+ZIP: 97201
 
 Services Received:
 - Date of Service: 2026-04-28
   Provider: Dr. Nora Patel (200000001)
   Service: Chocolate Addiction Counseling (598470)
-  Fee: $125.00
-  Comments: test charge
