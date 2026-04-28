@@ -18,10 +18,12 @@ An organized **localhost** ChocAn Data Processing System web app that implements
 - **provider1 / provider123**
 - **manager / manager123**
 
-## Setup & run (Windows / PowerShell)
+## Setup & run
+
+### Windows / PowerShell
 Open **two terminals** at the repo root.
 
-### Backend
+#### Backend
 ```powershell
 python -m venv backend\.venv
 backend\.venv\Scripts\python -m pip install -r backend\requirements.txt
@@ -35,7 +37,7 @@ backend\.venv\Scripts\uvicorn backend.app.main:app --reload --host 127.0.0.1 --p
 
 Health: `http://127.0.0.1:8001/api/health`
 
-### Frontend
+#### Frontend
 ```powershell
 cd frontend
 npm install
@@ -44,9 +46,46 @@ npm run dev
 
 Open: `http://127.0.0.1:5173/`
 
+### Linux / macOS / Bash
+Open **two terminals** at the repo root.
+
+#### Backend
+```bash
+cd backend
+python -m venv backend.venv
+source backend.venv/bin/activate
+pip install -r requirements.txt
+
+# Reset + seed database
+python -m app.seed --reset
+
+# Run API
+uvicorn app.main:app --reload --host 127.0.0.1 --port 8001
+```
+
+Health: `http://127.0.0.1:8001/api/health`
+
+#### Frontend
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Open: `http://127.0.0.1:5174/` (or `http://127.0.0.1:5173/` if port 5173 is available)
+
 ## Run tests
+
+**Windows / PowerShell:**
 ```powershell
 backend\.venv\Scripts\pytest
+```
+
+**Linux / macOS / Bash:**
+```bash
+cd backend
+source backend.venv/bin/activate
+pytest
 ```
 
 ## Tested flows (primary goal)
