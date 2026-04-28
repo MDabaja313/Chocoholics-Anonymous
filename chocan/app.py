@@ -22,6 +22,8 @@ def create_app() -> Flask:
     def validate_member_route():
         payload = request.get_json(silent=True) or {}
         member_number = str(payload.get("member_number", "")).strip()
+        if not member_number:
+            return jsonify({"result": "Invalid number"}), 400
         result = validate_member(member_number, data_dir)
         return jsonify({"result": result})
 
@@ -29,12 +31,22 @@ def create_app() -> Flask:
     def validate_provider_route():
         payload = request.get_json(silent=True) or {}
         provider_number = str(payload.get("provider_number", "")).strip()
+        if not provider_number:
+            return jsonify({"result": "Invalid number"}), 400
         result = validate_provider(provider_number, data_dir)
         return jsonify({"result": result})
 
     @app.post("/bill_service")
     def bill_service_route():
         payload = request.get_json(silent=True) or {}
+        if not str(payload.get("provider_number", "")).strip():
+            return jsonify({"result": "Invalid number", "record": None}), 400
+        if not str(payload.get("member_number", "")).strip():
+            return jsonify({"result": "Invalid number", "record": None}), 400
+        if not str(payload.get("service_code", "")).strip():
+            return jsonify({"result": "Invalid service code", "record": None}), 400
+        if not str(payload.get("date_of_service", "")).strip():
+            return jsonify({"result": "Invalid date of service", "record": None}), 400
         ok, msg, record = bill_service(
             provider_number=str(payload.get("provider_number", "")).strip(),
             member_number=str(payload.get("member_number", "")).strip(),
