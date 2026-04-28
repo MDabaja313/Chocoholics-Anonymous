@@ -3,40 +3,30 @@
     "number": "100000001",
     "member_number": "100000001",
     "name": "Alice Rivera",
-    "street_address": "12 Elm St",
-    "city": "Detroit",
-    "state": "MI",
-    "zip_code": "48201",
-    "status": "active"
+    "status": "active",
+    "street_address": "123 Main St",
+    "city": "Portland",
+    "state": "OR",
+    "zip_code": "97201"
   },
   {
     "number": "100000002",
     "member_number": "100000002",
     "name": "Brandon Lee",
-    "street_address": "45 Oak Ave",
-    "city": "Dearborn",
-    "state": "MI",
-    "zip_code": "48124",
-    "status": "suspended"
+    "status": "suspended",
+    "street_address": "456 Elm Ave",
+    "city": "Portland",
+    "state": "OR",
+    "zip_code": "97202"
   },
   {
     "number": "100000003",
     "member_number": "100000003",
     "name": "Carmen Diaz",
-    "street_address": "78 Maple Rd",
-    "city": "Ann Arbor",
-    "state": "MI",
-    "zip_code": "48104",
-    "status": "active"
-  },
-  {
-    "number": "123456789",
-    "member_number": "123456789",
-    "name": "Test User",
-    "street_address": "123 Main St",
-    "city": "Dearborn",
-    "state": "MI",
-    "zip_code": "48126",
-    "status": "active"
+    "status": "active",
+    "street_address": "789 Oak Blvd",
+    "city": "Portland",
+    "state": "OR",
+    "zip_code": "97203"
   }
 ]

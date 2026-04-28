@@ -3,7 +3,7 @@ from pathlib import Path
 from flask import Flask, jsonify, render_template, request
 
 from modules.billing import bill_service
-from modules.reports import generate_reports
+from modules.reports import generate_reports, generate_provider_directory
 from modules.validation import get_provider, get_service, provider_directory, validate_member, validate_provider
 import re
 import json
@@ -103,6 +103,12 @@ def create_app(*, data_dir: Path | None = None, outputs_dir: Path | None = None)
         generated = generate_reports(data_dir=data_dir, outputs_dir=outputs_dir)
         return jsonify({"result": "OK", "generated": generated})
 
+    @app.post("/generate_provider_directory")
+    def generate_provider_directory_route():
+        outputs_dir.mkdir(parents=True, exist_ok=True)
+        out_path = generate_provider_directory(data_dir=data_dir, outputs_dir=outputs_dir)
+        return jsonify({"result": "OK", "file": out_path})
+
     @app.get("/outputs_list")
     def outputs_list_route():
         outputs_dir.mkdir(parents=True, exist_ok=True)
@@ -121,9 +127,9 @@ def create_app(*, data_dir: Path | None = None, outputs_dir: Path | None = None)
         with path.open("w", encoding="utf-8") as f:
             json.dump(items, f, indent=2)
 
-    # Operator CRUD (prototype; no auth)
-    
-    # Operator Management Helpers
+    @app.get("/operator/members")
+    def operator_list_members():
+        return jsonify({"members": _read_json_list(data_dir / "members.json")})
 
     TWO_LETTER_STATE_RE = re.compile(r"^[A-Za-z]{2}$")
     FIVE_DIGIT_ZIP_RE = re.compile(r"^\d{5}$")
@@ -280,9 +286,9 @@ def create_app(*, data_dir: Path | None = None, outputs_dir: Path | None = None)
         new_members = [m for m in members if _record_number(m, "member") != number]
 
         if len(new_members) == len(members):
-            return jsonify({"result": "Member not found"}), 404
-
-        _write_json_list(path, new_members)
+            return jsonify({"result": "Not found"}), 404
+        _write_json_list(path, members)
+        return jsonify({"result": "OK"})
 
         return jsonify({"result": "Member deleted successfully"})
 
@@ -350,23 +356,9 @@ def create_app(*, data_dir: Path | None = None, outputs_dir: Path | None = None)
         new_providers = [p for p in providers if _record_number(p, "provider") != number]
 
         if len(new_providers) == len(providers):
-            return jsonify({"result": "Provider not found"}), 404
-
-        _write_json_list(path, new_providers)
-
-        return jsonify({"result": "Provider deleted successfully"})
-
-    # =========================
-    # List Routes for Frontend Tables
-    # =========================
-
-    @app.get("/operator/members")
-    def operator_list_members():
-        return jsonify({"members": _read_json_list(data_dir / "members.json")})
-
-    @app.get("/operator/providers")
-    def operator_list_providers():
-        return jsonify({"providers": _read_json_list(data_dir / "providers.json")})
+            return jsonify({"result": "Not found"}), 404
+        _write_json_list(path, providers)
+        return jsonify({"result": "OK"})
 
     return app
 
