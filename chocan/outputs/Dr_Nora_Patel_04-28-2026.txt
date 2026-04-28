@@ -1,0 +1,20 @@
+ChocAn Data Processing System
+Provider Report
+Date: 04-28-2026
+
+Provider Name: Dr. Nora Patel
+Provider Number: 200000001
+Street Address: 101 Pine St
+City: Portland
+State: OR
+ZIP: 97204
+
+Services Provided:
+- Date of Service: 2026-04-28
+  Date/Time Received: 
+  Member: Alice Rivera (100000001)
+  Service Code: 598470
+  Fee: $125.00
+
+Total Consultations: 1
+Total Fees: $125.00
