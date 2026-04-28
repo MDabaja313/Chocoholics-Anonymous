@@ -1,5 +1,6 @@
 [
   {
+    "number": "200000001",
     "provider_number": "200000001",
     "name": "Dr. Nora Patel",
     "status": "active",
@@ -9,6 +10,7 @@
     "zip_code": "97204"
   },
   {
+    "number": "200000002",
     "provider_number": "200000002",
     "name": "Evergreen Wellness Clinic",
     "status": "active",
@@ -18,6 +20,7 @@
     "zip_code": "97205"
   },
   {
+    "number": "200000003",
     "provider_number": "200000003",
     "name": "Sunrise Counseling Center",
     "status": "suspended",
